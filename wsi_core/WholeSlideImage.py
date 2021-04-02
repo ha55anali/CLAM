@@ -17,6 +17,7 @@ import itertools
 from wsi_core.util_classes import isInContourV1, isInContourV2, isInContourV3_Easy, isInContourV3_Hard, Contour_Checking_fn
 from utils.file_utils import load_pkl, save_pkl
 
+
 Image.MAX_IMAGE_PIXELS = 933120000
 
 class WholeSlideImage(object):
@@ -392,6 +393,9 @@ class WholeSlideImage(object):
 
     def process_contour(self, cont, contour_holes, patch_level, save_path, patch_size = 256, step_size = 256,
         contour_fn='four_pt', use_padding=True, top_left=None, bot_right=None):
+
+        print("*******************")
+
         start_x, start_y, w, h = cv2.boundingRect(cont) if cont is not None else (0, 0, self.level_dim[patch_level][0], self.level_dim[patch_level][1])
 
         patch_downsample = (int(self.level_downsamples[patch_level][0]), int(self.level_downsamples[patch_level][1]))

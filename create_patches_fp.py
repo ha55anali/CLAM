@@ -10,8 +10,15 @@ import argparse
 import pdb
 import pandas as pd
 
+import logging
+logging.basicConfig(level=logging.DEBUG, filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+
 def stitching(file_path, wsi_object, downscale = 64):
 	start = time.time()
+
+	print("------------------------------------")
+	print("calling stitching")
+
 	heatmap = StitchCoords(file_path, wsi_object, downscale=downscale, bg_color=(0,0,0), alpha=-1, draw_grid=False)
 	total_time = time.time() - start
 	
@@ -31,10 +38,14 @@ def segment(WSI_object, seg_params, filter_params):
 def patching(WSI_object, **kwargs):
 	### Start Patch Timer
 	start_time = time.time()
+	print("------------------------------------")
+	print("calling patching")
 
 	# Patch
 	file_path = WSI_object.process_contours(**kwargs)
 
+	logging.debug("filepath in patching: ")
+	logging.debug(kwargs)
 
 	### Stop Patch Timer
 	patch_time_elapsed = time.time() - start_time
@@ -55,6 +66,8 @@ def seg_and_patch(source, save_dir, patch_save_dir, mask_save_dir, stitch_save_d
 				  patch = False, auto_skip=True, process_list = None):
 	
 
+
+	logging.debug("stitch val in seg_and_patch:"+str(stitch))
 
 	slides = sorted(os.listdir(source))
 	slides = [slide for slide in slides if os.path.isfile(os.path.join(source, slide))]
@@ -100,7 +113,7 @@ def seg_and_patch(source, save_dir, patch_save_dir, mask_save_dir, stitch_save_d
 
 		# Inialize WSI
 		full_path = os.path.join(source, slide)
-		WSI_object = WholeSlideImage(full_path, hdf5_file=None)
+		WSI_object = WholeSlideImage(full_path)
 
 		if use_default_params:
 			current_vis_params = vis_params.copy()
@@ -198,6 +211,7 @@ def seg_and_patch(source, save_dir, patch_save_dir, mask_save_dir, stitch_save_d
 		stitch_time_elapsed = -1
 		if stitch:
 			file_path = os.path.join(patch_save_dir, slide_id+'.h5')
+			logging.debug(file_path)
 			if os.path.isfile(file_path):
 				heatmap, stitch_time_elapsed = stitching(file_path, WSI_object, downscale=64)
 				stitch_path = os.path.join(stitch_save_dir, slide_id+'.jpg')
@@ -298,6 +312,8 @@ if __name__ == '__main__':
 				  'vis_params': vis_params}
 
 	print(parameters)
+	logging.debug("stitch val in main:"+str(args.stitch))
+
 
 	seg_times, patch_times = seg_and_patch(**directories, **parameters,
 											patch_size = args.patch_size, step_size=args.step_size, 
